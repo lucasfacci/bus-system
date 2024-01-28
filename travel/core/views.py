@@ -1,8 +1,4 @@
 from django.core.serializers import serialize
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-import json
 from rest_framework import viewsets
 
 from .models import Travel
