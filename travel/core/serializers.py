@@ -1,18 +1,30 @@
 from rest_framework import serializers
 
-from .models import Travel
+from .models import Station, Travel
+
+class StationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Station
+        fields = (
+            'id',
+            'name',
+            'city',
+            'state',
+        )
+
 
 class TravelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Travel
         fields = (
             'id',
-            'date',
+            'departure_date',
+            'arrival_date',
             'category',
             'origin',
             'destination',
-            'departure',
-            'arrival',
+            'departure_time',
+            'arrival_time',
             'forecast',
             'price',
         )

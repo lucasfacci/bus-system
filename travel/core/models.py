@@ -12,15 +12,31 @@ class Standard(models.Model):
         abstract = True
 
 
+class Station(Standard):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, null=False)
+    city = models.CharField(max_length=255, null=False)
+    state = models.CharField(max_length=2, null=False)
+
+    class Meta:
+        verbose_name = 'Station'
+        verbose_name_plural = 'Stations'
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.name}'
+
+
 class Travel(Standard):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date = models.DateField()
+    departure_date = models.DateField()
+    arrival_date = models.DateField()
     category = models.CharField(max_length=255, null=False)
-    origin = models.CharField(max_length=255, null=False)
-    destination = models.CharField(max_length=255, null=False)
-    departure = models.TimeField()
-    arrival = models.TimeField()
-    forecast = models.TimeField(editable=False)
+    origin = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='departures')
+    destination = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='arrivals')
+    departure_time = models.TimeField()
+    arrival_time = models.TimeField()
+    forecast = models.DurationField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
 
     class Meta:
@@ -28,14 +44,19 @@ class Travel(Standard):
         verbose_name_plural = 'Travels'
         ordering = ['id']
 
+    def __str__(self):
+        return f'{self.id} : {self.origin} to {self.destination}'
+
+    def is_valid_travel(self):
+        return self.origin != self.destination and self.forecast.total_seconds() > 0
+
+    def calculate_forecast(self):
+        departure_datetime = datetime.combine(self.departure_date, self.departure_time)
+        arrival_datetime = datetime.combine(self.arrival_date, self.arrival_time)
+
+        return arrival_datetime - departure_datetime
+
     def save(self, *args, **kwargs):
-        try:
-            departure = datetime.combine(datetime.now().date(), datetime.strptime(self.departure, "%H:%M:%S").time())
-            arrival = datetime.combine(datetime.now().date(), datetime.strptime(self.arrival, "%H:%M:%S").time())
-        except:
-            departure = datetime.combine(datetime.now().date(), self.departure)
-            arrival = datetime.combine(datetime.now().date(), self.arrival)
-        duration = arrival - departure
-        forecast = datetime(1, 1, 1, 0, 0, 0) + duration
-        self.forecast = forecast.time()
+        self.forecast = self.calculate_forecast()
+
         super(Travel, self).save(*args, **kwargs)
