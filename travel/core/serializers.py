@@ -27,6 +27,7 @@ class TravelSerializer(serializers.ModelSerializer):
             'arrival_time',
             'forecast',
             'price',
+            'bus',
         )
         extra_kwargs = {
             'forecast': {'read_only': True},

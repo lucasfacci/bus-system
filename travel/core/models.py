@@ -38,6 +38,7 @@ class Travel(Standard):
     arrival_time = models.TimeField()
     forecast = models.DurationField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    bus = models.UUIDField(editable=True)
 
     class Meta:
         verbose_name = 'Travel'
